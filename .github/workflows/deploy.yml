@@ -24,7 +24,7 @@ jobs:
 
     # 任務的步驟
     steps:
-      # 步驟一：拉取程式碼
+      # 步驟一：拉取程式碼  準備階段
       # 使用官方的 checkout action
       - name: Checkout 🛎️
         uses: actions/checkout@v4
@@ -35,18 +35,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18" # 建議使用一個 LTS (長期支援) 版本
-          cache: "npm" # 為 npm 設定快取，加速後續執行
+          cache:
+            "npm" # 為 npm 設定快取，加速後續執行
+            # 【重要】新增這一行，告訴 action 去哪裡找 lock 檔案
+          cache-dependency-path: frontend/package-lock.json
 
-      # 步驟三：安裝專案依賴
+      # 步驟三：安裝專案依賴 建置階段
       - name: Install dependencies 👨‍🔧
         run: npm ci # 使用 npm ci 會比 npm install 更快、更可靠
+        working-directory: ./frontend
 
       # 步驟四：建置專案
       # npm run build 會執行 package.json 中 "scripts" 裡的 "build" 指令
       - name: Build 🏗️
         run: npm run build
+        working-directory: ./frontend
 
-      # 步驟五：設定 GitHub Pages
+      # 步驟五：設定 GitHub Pages 部署階段
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
@@ -55,7 +60,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./dist"
+          path: "./frontend/dist"
 
       # 步驟七：部署到 GitHub Pages
       - name: Deploy to GitHub Pages 🚀
